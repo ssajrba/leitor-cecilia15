@@ -1,128 +1,327 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
- <basetarget="_top">
- <metaname="viewport"content="width=device-width, initial-scale=1">
- <scriptsrc="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
- <style>
- body{font-family:Arial,sans-serif;background:#f5f3f7;color:#29232e;margin:0;padding:16px}
- .wrap{max-width:560px;margin:auto}
- .card{background:white;border-radius:16px;padding:18px;margin:12px0;box-shadow:02px10px#00000012}
- h1{font-size:23px;margin:4px0;color:#4a315f}
- .sub{color:#665f69;margin:0012px}
- button{border:0;border-radius:10px;padding:13px16px;font-size:16px;font-weight:bold;background:#4a315f;color:white;width:100%;margin-top:10px}
- button.secondary{background:#6b6470}
- #reader{width:100%;overflow:hidden}
- #result{padding:16px;border-radius:12px;margin-top:12px;font-weight:bold;display:none;white-space:pre-line}
- .ok{display:block!important;background:#e6f6eb;color:#176b35}
- .bad{display:block!important;background:#fdeaea;color:#a11c1c}
- .neutral{display:block!important;background:#fff4d8;color:#725000}
- .stats{display:flex;gap:8px}.stat{flex:1;background:#f1edf4;border-radius:10px;padding:12px;text-align:center}
- .num{font-size:24px;font-weight:bold;color:#4a315f}.small{font-size:12px;color:#655d69}
- .manual{display:flex;gap:8px}.manual input{flex:1;min-width:0;padding:12px;border:1pxsolid#ccc;border-radius:8px;font-size:14px}
- </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrada - Cecília 15 Anos</title>
+
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f5f3f8;
+      color: #292333;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background: white;
+      padding: 22px;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px #00000012;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 5px 0;
+      color: #70449a;
+      font-size: 25px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 22px;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .status {
+      margin: 18px 0;
+      padding: 18px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: bold;
+      background: #f0edf3;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .success { background: #d9f8e5; color: #126534; }
+    .error { background: #ffe0e0; color: #a51f1f; }
+    .warning { background: #fff1cc; color: #805500; }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 9px;
+      font-size: 15px;
+      margin: 8px 0;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 9px;
+      background: #70449a;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      background: #555;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      gap: 8px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .stat {
+      flex: 1;
+      padding: 12px 5px;
+      border-radius: 10px;
+      background: #f2eff5;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 23px;
+      color: #70449a;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #777;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
 </head>
+
 <body>
-<divclass="wrap">
- <divclass="card">
- <h1>Cecília 15 anos</h1>
- <pclass="sub">04/12/2026 • 20:00 — Controle de entrada</p>
- <divclass="stats">
- <divclass="stat"><divclass="num"id="total">—</div><divclass="small">Convidados</div></div>
- <divclass="stat"><divclass="num"id="entradas">—</div><divclass="small">Entradas</div></div>
- <divclass="stat"><divclass="num"id="pendentes">—</div><divclass="small">Pendentes</div></div>
- </div>
- </div>
+  <main class="container">
+    <h1>Cecília 15 anos</h1>
+    <div class="subtitle">Controle de entrada dos convidados</div>
 
- <divclass="card">
- <divid="reader"></div>
- <buttonid="startBtn"onclick="startScanner()">Abrir câmera e ler QR Code</button>
- <buttonclass="secondary"onclick="stopScanner()">Parar câmera</button>
- <divid="result"></div>
- </div>
+    <div id="reader"></div>
 
- <divclass="card">
- <b>Leitura manual (contingência)</b>
- <pclass="small">Use somente se a câmera não conseguir ler o QR Code.</p>
- <divclass="manual">
- <inputid="manualCode"placeholder="Conteúdo do QR Code">
- <buttonstyle="width:auto;margin:0"onclick="manualValidate()">Validar</button>
- </div>
- </div>
-</div>
+    <div id="status" class="status">
+      Aguardando leitura do QR Code...
+    </div>
 
-<script>
-let scanner = null;
-let busy = false;
+    <button id="startButton" onclick="iniciarLeitor()">
+      ATIVAR CÂMERA
+    </button>
 
-function showResult(data) {
-const box = document.getElementById('result');
- box.className = '';
- box.classList.add(data.status === 'LIBERADO' ? 'ok' :
- (data.status === 'DUPLICADO' || data.status === 'INVALIDO' ||
- data.status === 'NAO_ENCONTRADO' ? 'bad' : 'neutral'));
- box.textContent = data.mensagem + (data.nome ? '\nConvidado: ' + data.nome : '') +
- (data.horario ? '\nHorário: ' + data.horario : '');
- refreshStats();
-}
+    <button id="stopButton" class="secondary"
+      onclick="pararLeitor()" disabled>
+      PARAR CÂMERA
+    </button>
 
-function validate(code) {
-if (busy) return;
- busy = true;
- google.script.run
- .withSuccessHandler(function(data) {
- showResult(data);
- busy = false;
-if (scanner) {
- // Pausa curta após cada leitura para a equipe visualizar a resposta.
- setTimeout(() => { try { scanner.resume(); } catch(e) {} }, 1800);
- }
- })
- .withFailureHandler(function(err) {
- showResult({status:'ERRO', mensagem:'Erro de comunicação: ' + err.message});
- busy = false;
- })
- .validarEntrada(code);
-}
+    <hr style="margin:24px 0;border:0;border-top:1px solid #eee">
 
-function startScanner() {
-if (!window.Html5Qrcode) {
- showResult({status:'ERRO', mensagem:'Não foi possível carregar o leitor. Verifique a internet e recarregue a página.'});
-return;
- }
-if (!scanner) scanner = newHtml5Qrcode("reader");
-Html5Qrcode.getCameras().then(cameras => {
-if (!cameras || cameras.length === 0) thrownewError('Nenhuma câmera encontrada.');
-const camera = cameras.find(c => /back|traseira|environment/i.test(c.label)) || cameras[0];
- scanner.start(camera.id, {fps:10, qrbox:{width:240,height:240}},
- decodedText => {
-if (busy) return;
-try { scanner.pause(true); } catch(e) {}
- validate(decodedText);
- },
- _ => {}
- ).catch(err => showResult({status:'ERRO', mensagem:'Não foi possível abrir a câmera: ' + err}));
- }).catch(err => showResult({status:'ERRO', mensagem:'Erro ao acessar câmera: ' + err}));
-}
+    <h3>Validação manual</h3>
+    <input
+      id="codigoManual"
+      type="text"
+      placeholder="Cole aqui o conteúdo completo do QR Code"
+      autocomplete="off"
+    >
 
-function stopScanner() {
-if (scanner && scanner.isScanning) scanner.stop().catch(()=>{});
-}
+    <button onclick="validarManual()">
+      VALIDAR CONVITE
+    </button>
 
-function manualValidate() {
-const code = document.getElementById('manualCode').value.trim();
-if (code) validate(code);
-}
+    <div class="small">
+      Sistema de controle de entrada • Cecília 15 anos
+    </div>
+  </main>
 
-function refreshStats() {
- google.script.run.withSuccessHandler(data => {
- document.getElementById('total').textContent = data.total;
- document.getElementById('entradas').textContent = data.entradas;
- document.getElementById('pendentes').textContent = data.pendentes;
- }).obterResumo();
-}
-refreshStats();
-setInterval(refreshStats, 15000);
-</script>
+  <script>
+    // COLOQUE AQUI O ENDEREÇO COMPLETO DO SEU APPS SCRIPT
+    const API_URL = "COLE_AQUI_A_URL_COMPLETA_DO_APPS_SCRIPT";
+
+    let leitor = null;
+    let processando = false;
+
+    const statusEl = document.getElementById("status");
+
+    function mostrarStatus(mensagem, tipo = "") {
+      statusEl.className = "status " + tipo;
+      statusEl.textContent = mensagem;
+    }
+
+    function validarFormato(codigo) {
+      const partes = codigo.trim().split("|");
+
+      return partes.length === 4 &&
+        partes[0] === "CECILIA15" &&
+        partes[1] === "2026-12-04" &&
+        partes[2] === "20:00" &&
+        /^[a-fA-F0-9]{32}$/.test(partes[3]);
+    }
+
+    function enviarValidacao(codigo) {
+      if (processando) return;
+
+      if (!validarFormato(codigo)) {
+        mostrarStatus("QR CODE INVÁLIDO OU NÃO RECONHECIDO", "error");
+        return;
+      }
+
+      if (!API_URL.startsWith("https://script.google.com/")) {
+        mostrarStatus("Configure a URL do Apps Script no arquivo index.html.", "error");
+        return;
+      }
+
+      processando = true;
+      document.getElementById("startButton").disabled = true;
+      mostrarStatus("Consultando convite na planilha...", "warning");
+
+      const callback = "respostaQR_" + Date.now();
+      const script = document.createElement("script");
+
+      let finalizado = false;
+
+      function concluir(resultado, erro = false) {
+        if (finalizado) return;
+        finalizado = true;
+
+        delete window[callback];
+        script.remove();
+        clearTimeout(timeout);
+
+        processando = false;
+        document.getElementById("startButton").disabled = false;
+
+        if (erro) {
+          mostrarStatus("Não foi possível consultar o sistema. Verifique a conexão e tente novamente.", "error");
+          return;
+        }
+
+        const texto = typeof resultado === "string"
+          ? resultado
+          : JSON.stringify(resultado, null, 2);
+
+        const conteudo = texto.toUpperCase();
+
+        if (conteudo.includes("ENTRADA AUTORIZADA")) {
+          mostrarStatus("✓ ENTRADA AUTORIZADA\n\n" + texto, "success");
+        } else if (
+          conteudo.includes("UTILIZADO") ||
+          conteudo.includes("JÁ FOI") ||
+          conteudo.includes("JA FOI") ||
+          conteudo.includes("DUPLICADO")
+        ) {
+          mostrarStatus("✕ CONVITE JÁ UTILIZADO\n\n" + texto, "error");
+        } else {
+          mostrarStatus(texto, "warning");
+        }
+      }
+
+      window[callback] = function(resultado) {
+        concluir(resultado);
+      };
+
+      const timeout = setTimeout(() => concluir(null, true), 20000);
+
+      const separador = API_URL.includes("?") ? "&" : "?";
+
+      script.src = API_URL + separador +
+        "action=validar" +
+        "&qr=" + encodeURIComponent(codigo.trim()) +
+        "&callback=" + encodeURIComponent(callback);
+
+      script.onerror = () => concluir(null, true);
+
+      document.body.appendChild(script);
+    }
+
+    async function iniciarLeitor() {
+      try {
+        if (!leitor) {
+          leitor = new Html5Qrcode("reader");
+        }
+
+        const cameras = await Html5Qrcode.getCameras();
+
+        if (!cameras || cameras.length === 0) {
+          throw new Error("Nenhuma câmera encontrada.");
+        }
+
+        const traseira = cameras.find(c =>
+          /back|rear|environment|traseira/i.test(c.label)
+        );
+
+        const camera = traseira ? traseira.id : cameras[cameras.length - 1].id;
+
+        await leitor.start(
+          camera,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          codigo => {
+            if (!processando) {
+              enviarValidacao(codigo);
+            }
+          },
+          () => {}
+        );
+
+        document.getElementById("startButton").disabled = true;
+        document.getElementById("stopButton").disabled = false;
+
+        mostrarStatus("Câmera ativa. Aponte para o QR Code do convite.");
+      } catch (erro) {
+        mostrarStatus("Erro ao acessar câmera: " + erro.message, "error");
+      }
+    }
+
+    async function pararLeitor() {
+      if (leitor && leitor.isScanning) {
+        await leitor.stop();
+      }
+
+      document.getElementById("startButton").disabled = false;
+      document.getElementById("stopButton").disabled = true;
+    }
+
+    function validarManual() {
+      const codigo = document.getElementById("codigoManual").value.trim();
+
+      if (!codigo) {
+        mostrarStatus("Digite o conteúdo completo do QR Code.", "warning");
+        return;
+      }
+
+      enviarValidacao(codigo);
+    }
+  </script>
 </body>
 </html>

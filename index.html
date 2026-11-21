@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <basetarget="_top">
+ <metaname="viewport"content="width=device-width, initial-scale=1">
+ <scriptsrc="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+ <style>
+ body{font-family:Arial,sans-serif;background:#f5f3f7;color:#29232e;margin:0;padding:16px}
+ .wrap{max-width:560px;margin:auto}
+ .card{background:white;border-radius:16px;padding:18px;margin:12px0;box-shadow:02px10px#00000012}
+ h1{font-size:23px;margin:4px0;color:#4a315f}
+ .sub{color:#665f69;margin:0012px}
+ button{border:0;border-radius:10px;padding:13px16px;font-size:16px;font-weight:bold;background:#4a315f;color:white;width:100%;margin-top:10px}
+ button.secondary{background:#6b6470}
+ #reader{width:100%;overflow:hidden}
+ #result{padding:16px;border-radius:12px;margin-top:12px;font-weight:bold;display:none;white-space:pre-line}
+ .ok{display:block!important;background:#e6f6eb;color:#176b35}
+ .bad{display:block!important;background:#fdeaea;color:#a11c1c}
+ .neutral{display:block!important;background:#fff4d8;color:#725000}
+ .stats{display:flex;gap:8px}.stat{flex:1;background:#f1edf4;border-radius:10px;padding:12px;text-align:center}
+ .num{font-size:24px;font-weight:bold;color:#4a315f}.small{font-size:12px;color:#655d69}
+ .manual{display:flex;gap:8px}.manual input{flex:1;min-width:0;padding:12px;border:1pxsolid#ccc;border-radius:8px;font-size:14px}
+ </style>
+</head>
+<body>
+<divclass="wrap">
+ <divclass="card">
+ <h1>Cecília 15 anos</h1>
+ <pclass="sub">04/12/2026 • 20:00 — Controle de entrada</p>
+ <divclass="stats">
+ <divclass="stat"><divclass="num"id="total">—</div><divclass="small">Convidados</div></div>
+ <divclass="stat"><divclass="num"id="entradas">—</div><divclass="small">Entradas</div></div>
+ <divclass="stat"><divclass="num"id="pendentes">—</div><divclass="small">Pendentes</div></div>
+ </div>
+ </div>
+
+ <divclass="card">
+ <divid="reader"></div>
+ <buttonid="startBtn"onclick="startScanner()">Abrir câmera e ler QR Code</button>
+ <buttonclass="secondary"onclick="stopScanner()">Parar câmera</button>
+ <divid="result"></div>
+ </div>
+
+ <divclass="card">
+ <b>Leitura manual (contingência)</b>
+ <pclass="small">Use somente se a câmera não conseguir ler o QR Code.</p>
+ <divclass="manual">
+ <inputid="manualCode"placeholder="Conteúdo do QR Code">
+ <buttonstyle="width:auto;margin:0"onclick="manualValidate()">Validar</button>
+ </div>
+ </div>
+</div>
+
+<script>
+let scanner = null;
+let busy = false;
+
+function showResult(data) {
+const box = document.getElementById('result');
+ box.className = '';
+ box.classList.add(data.status === 'LIBERADO' ? 'ok' :
+ (data.status === 'DUPLICADO' || data.status === 'INVALIDO' ||
+ data.status === 'NAO_ENCONTRADO' ? 'bad' : 'neutral'));
+ box.textContent = data.mensagem + (data.nome ? '\nConvidado: ' + data.nome : '') +
+ (data.horario ? '\nHorário: ' + data.horario : '');
+ refreshStats();
+}
+
+function validate(code) {
+if (busy) return;
+ busy = true;
+ google.script.run
+ .withSuccessHandler(function(data) {
+ showResult(data);
+ busy = false;
+if (scanner) {
+ // Pausa curta após cada leitura para a equipe visualizar a resposta.
+ setTimeout(() => { try { scanner.resume(); } catch(e) {} }, 1800);
+ }
+ })
+ .withFailureHandler(function(err) {
+ showResult({status:'ERRO', mensagem:'Erro de comunicação: ' + err.message});
+ busy = false;
+ })
+ .validarEntrada(code);
+}
+
+function startScanner() {
+if (!window.Html5Qrcode) {
+ showResult({status:'ERRO', mensagem:'Não foi possível carregar o leitor. Verifique a internet e recarregue a página.'});
+return;
+ }
+if (!scanner) scanner = newHtml5Qrcode("reader");
+Html5Qrcode.getCameras().then(cameras => {
+if (!cameras || cameras.length === 0) thrownewError('Nenhuma câmera encontrada.');
+const camera = cameras.find(c => /back|traseira|environment/i.test(c.label)) || cameras[0];
+ scanner.start(camera.id, {fps:10, qrbox:{width:240,height:240}},
+ decodedText => {
+if (busy) return;
+try { scanner.pause(true); } catch(e) {}
+ validate(decodedText);
+ },
+ _ => {}
+ ).catch(err => showResult({status:'ERRO', mensagem:'Não foi possível abrir a câmera: ' + err}));
+ }).catch(err => showResult({status:'ERRO', mensagem:'Erro ao acessar câmera: ' + err}));
+}
+
+function stopScanner() {
+if (scanner && scanner.isScanning) scanner.stop().catch(()=>{});
+}
+
+function manualValidate() {
+const code = document.getElementById('manualCode').value.trim();
+if (code) validate(code);
+}
+
+function refreshStats() {
+ google.script.run.withSuccessHandler(data => {
+ document.getElementById('total').textContent = data.total;
+ document.getElementById('entradas').textContent = data.entradas;
+ document.getElementById('pendentes').textContent = data.pendentes;
+ }).obterResumo();
+}
+refreshStats();
+setInterval(refreshStats, 15000);
+</script>
+</body>
+</html>
